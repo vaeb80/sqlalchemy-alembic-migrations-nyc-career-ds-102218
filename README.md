@@ -3,18 +3,20 @@
 
 ## Objective
 
-1.  Understand how migrations help us manipulate database schema in a quick and easy manner
-2.  Learn how to use Alembic to write migrations with SQLAlchemy
+1.  Understand how migrations help us manipulate database schema
+2.  Learn how to write migrations for SQLAlchemy databases with Alembic
 
 ## Migrations
 
-In the "Mapping and Table Creation" lab, we learned how to use Python to map classes to a database table.  We named a database and established a connection to that database, wrote a class that could map to a table in that database, then executed `create_all()` to create the database and that table.  Remember if we realized that we made a mistake creating our schema, we were forced to delete the database file and try again?  The problem with `create_all()` is that it can only create tables from scratch, so it cannot modify them afterwards.  Wouldn't it be nice if there were a way to make changes to a database without having to delete the earlier version of the database and re-create the newer version?
+In the "Mapping and Table Creation" lab, we learned how to use Python to map classes to a database table.  We named a database and established a connection to that database, wrote a class that could map to a table in that database, then executed `create_all()` to create the database and that table.
 
-Fortunately, there is!  We can use migrations to manage any changes make to our database schema.  Migrations are sort of like a version control for databases.  We can make a table, populate it with data, and, if we decide to add a column later on, we can write a migration to make this change without worrying too much about losing the data in the table.  Migration tools aim to minimize the effect a change in database schema has on the existing data stored in the tables.  If we later decide to undo this change, we can rollback the migration to return to our database's prior state.
+Remember how if we realized that we made a mistake creating our schema, we were forced to delete the database file and try again?  The problem with `create_all()` is that it only can create tables from scratch.  It cannot modify them afterwards.  SQLAlchemy looks at our models whenever we run `create_all()`.  If the database already has a table matching a class in our models file, SQLAlchemy skips over it until it finds something new to map to the database.  Therefore, we cannot make changes to our models, re-execute `create_all()`, and expect these changes to be reflected in our database.  Wouldn't it be nice if there were a way to make changes without having to delete the earlier version of the database and re-create the newer version?
+
+Fortunately, there is!  We can use migrations to manage any changes made to our database schema.  Migrations are sort of like a version control for databases.  We can make a table, populate it with data, and, if we decide to add a column later on, we can write a migration to make this change without worrying too much about losing the data in the table.  Migration tools aim to minimize the effect a change in database schema has on the existing data stored in the tables.  If we later decide to undo this change, we can rollback the migration to return to our database's prior state.
 
 ## SQLAlchemy Migrations with Alembic
 
-[Alembic](http://alembic.zzzcomputing.com/en/latest/) is the migration tool we use with SQLAlchemy.  Alembic provides us with a simple way to create tables, drop tables, add columns, remove columns, and alter columns.  Fork and clone this repository and we'll walk through writing Alembic migrations together.
+[Alembic](http://alembic.zzzcomputing.com/en/latest/) is the migration tool we use with SQLAlchemy.  Alembic provides us with a simple way to create and drop tables, and add, remove, and alter columns.  Fork and clone this repository and we'll walk through writing Alembic migrations together.
 
 > To install Alembic, run `pip install alembic` in your terminal
 
@@ -40,9 +42,9 @@ Even though we can use Alembic to create tables for us, we still need to configu
 ```python
 alembic init alembic
 ```
-Notice that Alembic has generated a number of things for us, including the `alembic` subdirectory and the `alembic.ini` file.  Our migration scripts will appear inside `alembic/versions`, but first we must tell Alembic to talk to our database.
+Notice that Alembic has generated a number of things for us, including the `alembic` subdirectory and the `alembic.ini` file.  Our migration scripts will appear inside the `alembic/versions` folder, but first we must tell Alembic to talk to our database.
 
-* Set "sqlalchemy.url" (around line 38) in `alembic.ini` to point to our database.  Our database name is the string we provided to the `create_engine` function when we first configured the database.
+* Set "sqlalchemy.url" (line 38) in `alembic.ini` to point to our database.  Our database name is the string we provided to the `create_engine` function when we first configured the database.
 
 ```python
 sqlalchemy.url = sqlite:///artists.db
@@ -110,6 +112,9 @@ We use `op` from Alembic to specify the kind of alteration we wish to make to ou
 ```python
 alembic upgrade head
 ```
+
+
+> **Note:** If we wanted to rollback the previous revision, we could instead run `alembic downgrade -1`.
 
 #### Step 5: Update the models to match the table changes
 
